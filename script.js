@@ -7,7 +7,6 @@ const restartBtn = document.getElementById("restart-btn");
 let cats = [];
 let likedCats = [];
 
-// ✅ SIMPLE & RELIABLE CAT SOURCE
 async function fetchCats(count = 10) {
     cats = [];
     for (let i = 0; i < count; i++) {
@@ -15,7 +14,6 @@ async function fetchCats(count = 10) {
     }
 }
 
-// Create all cards ONCE
 function showCats() {
     catStack.innerHTML = "";
 
@@ -30,7 +28,6 @@ function showCats() {
     });
 }
 
-// Swipe logic
 function addSwipe(card, catUrl) {
     let startX = 0;
     let currentX = 0;
@@ -62,7 +59,6 @@ function addSwipe(card, catUrl) {
     });
 }
 
-// Handle swipe
 function swipe(card, catUrl, direction) {
     if (direction === "right") {
         likedCats.push(catUrl);
@@ -84,7 +80,6 @@ function swipe(card, catUrl, direction) {
     }, 400);
 }
 
-// Summary screen
 function showSummary() {
     catStack.style.display = "none";
     summary.classList.remove("hidden");
@@ -99,7 +94,6 @@ function showSummary() {
     });
 }
 
-// Restart
 restartBtn.addEventListener("click", async () => {
     likedCats = [];
     summary.classList.add("hidden");
@@ -107,7 +101,6 @@ restartBtn.addEventListener("click", async () => {
     await init();
 });
 
-// Init app
 async function init() {
     await fetchCats(10);
     showCats();

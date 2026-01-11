@@ -1,109 +1,116 @@
-const catStack = document.getElementById('cat-stack');
-const summary = document.getElementById('summary');
-const likedCatsDiv = document.getElementById('liked-cats');
-const likedCount = document.getElementById('liked-count');
-const restartBtn = document.getElementById('restart-btn');
+const catStack = document.getElementById("cat-stack");
+const summary = document.getElementById("summary");
+const likedCatsDiv = document.getElementById("liked-cats");
+const likedCount = document.getElementById("liked-count");
+const restartBtn = document.getElementById("restart-btn");
 
 let cats = [];
 let likedCats = [];
 
-// Fetch cats from Cataas
+// ✅ SIMPLE & RELIABLE CAT SOURCE
 async function fetchCats(count = 10) {
     cats = [];
     for (let i = 0; i < count; i++) {
-        const response = await fetch('https://cataas.com/cat?json=true');
-        const data = await response.json();
-        cats.push(`https://cataas.com${data.url}`);
+        cats.push(`https://cataas.com/cat?${Date.now() + i}`);
     }
 }
 
-// Pre-create all cat cards
+// Create all cards ONCE
 function showCats() {
-    catStack.innerHTML = '';
+    catStack.innerHTML = "";
+
     cats.forEach((catUrl, index) => {
-        const card = document.createElement('div');
-        card.classList.add('cat-card');
-        card.style.zIndex = cats.length - index; // top card has highest z-index
+        const card = document.createElement("div");
+        card.className = "cat-card";
+        card.style.zIndex = cats.length - index;
         card.innerHTML = `<img src="${catUrl}" alt="Cat">`;
-        addSwipeListeners(card, catUrl);
+
+        addSwipe(card, catUrl);
         catStack.appendChild(card);
     });
 }
 
-// Add swipe functionality to a card
-function addSwipeListeners(card, catUrl) {
+// Swipe logic
+function addSwipe(card, catUrl) {
     let startX = 0;
     let currentX = 0;
+    let dragging = false;
 
-    card.addEventListener('touchstart', e => {
+    card.addEventListener("touchstart", e => {
         startX = e.touches[0].clientX;
+        dragging = true;
     });
 
-    card.addEventListener('touchmove', e => {
+    card.addEventListener("touchmove", e => {
+        if (!dragging) return;
         currentX = e.touches[0].clientX - startX;
         card.style.transform = `translateX(${currentX}px) rotate(${currentX * 0.1}deg)`;
     });
 
-    card.addEventListener('touchend', () => {
-        if (currentX > 100) {
-            swipe(catUrl, 'right', card);
-        } else if (currentX < -100) {
-            swipe(catUrl, 'left', card);
-        } else {
-            card.style.transform = 'translateX(0px) rotate(0deg)';
-        }
-    });
+    card.addEventListener("touchend", () => {
+        dragging = false;
 
-    // Optional: click to like
-    card.addEventListener('click', () => {
-        swipe(catUrl, 'right', card);
+        if (currentX > 120) {
+            swipe(card, catUrl, "right");
+        } else if (currentX < -120) {
+            swipe(card, catUrl, "left");
+        } else {
+            card.style.transform = "translateX(0) rotate(0)";
+        }
+
+        currentX = 0;
     });
 }
 
 // Handle swipe
-function swipe(catUrl, direction, card) {
-    if (direction === 'right') likedCats.push(catUrl);
+function swipe(card, catUrl, direction) {
+    if (direction === "right") {
+        likedCats.push(catUrl);
+    }
 
-    card.style.transition = 'all 0.5s ease';
-    card.style.transform = `translateX(${direction === 'right' ? 1000 : -1000}px) rotate(${direction === 'right' ? 45 : -45}deg)`;
-    card.style.opacity = '0';
+    card.style.transition = "transform 0.4s ease, opacity 0.4s ease";
+    card.style.transform =
+        direction === "right"
+            ? "translateX(1200px) rotate(45deg)"
+            : "translateX(-1200px) rotate(-45deg)";
+    card.style.opacity = "0";
 
     setTimeout(() => {
-        card.remove(); // Remove the swiped card from DOM
+        card.remove();
 
-        // Check if any cards left
-        if (catStack.childElementCount === 0) {
+        if (catStack.children.length === 0) {
             showSummary();
         }
-    }, 500);
+    }, 400);
 }
 
-// Show summary
+// Summary screen
 function showSummary() {
-    catStack.style.display = 'none';
-    summary.classList.remove('hidden');
+    catStack.style.display = "none";
+    summary.classList.remove("hidden");
+
     likedCount.textContent = likedCats.length;
-    likedCatsDiv.innerHTML = '';
+    likedCatsDiv.innerHTML = "";
+
     likedCats.forEach(url => {
-        const img = document.createElement('img');
+        const img = document.createElement("img");
         img.src = url;
         likedCatsDiv.appendChild(img);
     });
 }
 
-// Restart the game
-restartBtn.addEventListener('click', async () => {
+// Restart
+restartBtn.addEventListener("click", async () => {
     likedCats = [];
-    summary.classList.add('hidden');
-    catStack.style.display = 'block';
+    summary.classList.add("hidden");
+    catStack.style.display = "block";
     await init();
 });
 
-// Initialize the app
+// Init app
 async function init() {
-    await fetchCats();
+    await fetchCats(10);
     showCats();
 }
 
 init();
-
